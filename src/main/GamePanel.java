@@ -79,8 +79,14 @@ public class GamePanel extends JPanel implements Runnable{
 
     public void paintComponent(Graphics graphics) {
         super.paintComponent(graphics);
-
         Graphics2D graphics2D = (Graphics2D)graphics; // Convert graphics to graphics2D
+
+        // Debug: Check when drawing time starts
+        long drawStart = 0;
+        if(keyHandler.checkDrawTime == true) {
+            drawStart = System.nanoTime();
+        }
+
         // Tiles
         tileManager.draw(graphics2D);
 
@@ -96,6 +102,15 @@ public class GamePanel extends JPanel implements Runnable{
 
         // UI
         ui.draw(graphics2D);
+
+        // Debug: Check when drawing time ends
+        if(keyHandler.checkDrawTime == true) {
+            long drawEnd = System.nanoTime();
+            long passed = drawEnd - drawStart;
+            graphics2D.setColor(Color.WHITE);
+            graphics2D.drawString("Draw time: " + passed, 10, 400);
+            System.out.println("Draw time: " + passed);
+        }
 
         graphics2D.dispose(); // Free up space and save memory by disposing of drawing after its drawn
     }

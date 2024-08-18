@@ -2,6 +2,7 @@ package entity;
 
 import main.GamePanel;
 import main.KeyHandler;
+import main.UtilityTool;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -11,9 +12,11 @@ import java.io.IOException;
 public class Player extends Entity{
     public final int screenX, screenY; // Determines where to draw player on the screen
     public int hasKey = 0;
+    int standCounter = 0;
 
     GamePanel gamePanel;
     KeyHandler keyHandler;
+    UtilityTool uTool = new UtilityTool();
 
     public Player(GamePanel gp, KeyHandler kh) {
         this.gamePanel = gp;
@@ -40,19 +43,27 @@ public class Player extends Entity{
     }
 
     public void getPlayerImage() {
-        try {
-            up1 = ImageIO.read(getClass().getResourceAsStream("/player/boy_up_1.png"));
-            up2 = ImageIO.read(getClass().getResourceAsStream("/player/boy_up_2.png"));
-            down1 = ImageIO.read(getClass().getResourceAsStream("/player/boy_down_1.png"));
-            down2 = ImageIO.read(getClass().getResourceAsStream("/player/boy_down_2.png"));
-            right1 = ImageIO.read(getClass().getResourceAsStream("/player/boy_right_1.png"));
-            right2 = ImageIO.read(getClass().getResourceAsStream("/player/boy_right_2.png"));
-            left1 = ImageIO.read(getClass().getResourceAsStream("/player/boy_left_1.png"));
-            left2 = ImageIO.read(getClass().getResourceAsStream("/player/boy_left_2.png"));
+        up1 = setUp("boy_up_1");
+        up2 = setUp("boy_up_2");
+        down1 = setUp("boy_down_1");
+        down2 = setUp("boy_down_2");
+        right1 = setUp("boy_right_1");
+        right2 = setUp("boy_right_2");
+        left1 = setUp("boy_left_1");
+        left2 = setUp("boy_left_2");
+    }
+
+    public BufferedImage setUp(String imageName) { // Used to increase performance through BufferedImage and pre-scaling
+        BufferedImage image = null;
+        try{
+            image = ImageIO.read(getClass().getResourceAsStream("/player/" + imageName + ".png"));
+            image = uTool.scaleImage(image, gamePanel.tileSize, gamePanel.tileSize);
         }
         catch(IOException e) {
             e.printStackTrace();
         }
+
+        return image;
     }
 
     public void update() { // This is called in the main game loop in GamePanel/update()
@@ -105,6 +116,14 @@ public class Player extends Entity{
                     spriteNumber =1;
                 }
                 spriteCounter = 0;
+            }
+        }
+        else { // Make the player return to idle position after moving
+            standCounter++;
+            if(standCounter == 15) { // This number controls the delay from a moving sprite to an idle sprite
+                spriteNumber = 1;
+                standCounter = 0;
+
             }
         }
     }
@@ -181,6 +200,10 @@ public class Player extends Entity{
                 }
                 break;
         }
-        graphics2D.drawImage(image, screenX, screenY, gamePanel.tileSize, gamePanel.tileSize, null);
+        graphics2D.drawImage(image, screenX, screenY, null);
+
+        // Draw the player's collision box in red
+        graphics2D.setColor(Color.RED);
+        graphics2D.drawRect(screenX + solidArea.x, screenY + solidArea.y, solidArea.width, solidArea.height);
     }
 }
